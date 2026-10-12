@@ -10,6 +10,22 @@
 
 本仓库记录各平台从源码构建 ZCode TUI 的完整过程，并提供可重复执行的脚本。
 
+## 预编译产物（Release）
+
+不想从源码构建的，可直接下载 [Releases](https://github.com/yupoet/zcode-tui/releases) 中的预编译包（含 `bin/zcode.cjs` 与入口脚本 `bin/zcode`）：
+
+| 产物 | 平台 | 源码版本 | CLI 版本 |
+| --- | --- | --- | --- |
+| `zcode-tui-v3.15.1-macos-x86_64.tar.gz` | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+
+```bash
+tar -xzf zcode-tui-v3.15.1-macos-x86_64.tar.gz
+cd zcode-tui-v3.15.1-macos-x86_64
+./bin/zcode --version   # 需 Node.js >= 24.14.0
+./bin/zcode login       # 首次登录
+./bin/zcode             # 进入 TUI
+```
+
 ## 平台支持状态
 
 | 平台 | 状态 | 文档 |
