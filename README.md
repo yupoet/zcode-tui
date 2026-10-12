@@ -132,6 +132,10 @@ pnpm --filter @zcode/cli... build
 scripts/
   install-macos-intel.sh   # macOS Intel 一键安装脚本
   zcode-wrapper.sh         # ~/.local/bin/zcode 入口模板
+vendor/
+  README.md                # 快照来源、版本、许可证与使用说明
+  ZCode/                   # 上游 zai-org/ZCode 源码快照（v3.15.1, aac47556, Apache-2.0）
+                           # 已剔除 node_modules/dist 等构建产物，可直接 pnpm install 构建
 ```
 
 ## 参考
