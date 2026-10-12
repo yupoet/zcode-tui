@@ -5,8 +5,8 @@
 ## 背景
 
 - ZCode **没有官方独立 npm CLI 包**（`@zhipu/zcode` 在 npm 上不存在，404）。官方分发渠道是 [zcode-ai.com](https://zcode-ai.com) 的桌面客户端（Electron GUI）。
-- npm 上的 `zcode-app-cli` 是社区非官方封装，且依赖从本地桌面版提取运行时。
-- 官方仓库 [zai-org/ZCode](https://github.com/zai-org/ZCode) 是开源的，包含桌面应用、Web、后端以及 Agent CLI/TUI 源码（`apps/zcode-cli/`），可以自己构建出纯终端入口，无需 Electron。
+- npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区非官方封装：它直接从官方桌面版发布物（.deb 等）提取**官方 runtime**、套上自研的 pi-tui 终端界面，npm 包内置 runtime，**不需要本机安装桌面版**。其界面与版本号（如 `v3.14.5-34`）与桌面客户端一致，支持 Linux/macOS/Windows，Node.js >= 22.19 即可，是 Ubuntu 上最省事的方案。
+- 官方仓库 [zai-org/ZCode](https://github.com/zai-org/ZCode) 是开源的，包含桌面应用、Web、后端以及 Agent CLI/TUI 源码（`apps/zcode-cli/`），可以自己构建出纯终端入口，无需 Electron。源码构建出的是官方 OpenTUI 版 CLI（版本号 `0.16.9`），界面与桌面客户端不同。
 
 本仓库记录各平台从源码构建 ZCode TUI 的完整过程，并提供可重复执行的脚本。
 
@@ -17,7 +17,9 @@
 | 产物 | 平台 | 源码版本 | CLI 版本 |
 | --- | --- | --- | --- |
 | [`release/macos-x86_64/`](release/macos-x86_64/) | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+| [`release/ubuntu-x86_64/`](release/ubuntu-x86_64/) | Ubuntu (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
 | `zcode-tui-v3.15.1-macos-x86_64.tar.gz`（Release 资产） | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+| `zcode-tui-v3.15.1-ubuntu-x86_64.tar.gz`（Release 资产） | Ubuntu (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
 
 ```bash
 git clone https://github.com/yupoet/zcode-tui.git
@@ -32,7 +34,7 @@ cd zcode-tui/release/macos-x86_64
 | 平台 | 状态 | 文档 |
 | --- | --- | --- |
 | macOS Intel (x86_64) | ✅ 已验证 | 见下文 |
-| Ubuntu | 🚧 待补充 | — |
+| Ubuntu (x86_64) | ✅ 已验证 | 见下文 |
 
 ---
 
@@ -139,7 +141,58 @@ pnpm --filter @zcode/cli... build
 
 ## Ubuntu
 
-🚧 待补充（计划记录基于 Ubuntu 的构建方案）。
+已在以下环境验证：
+
+- 系统：Ubuntu（`uname -m` → `x86_64`）
+- Node.js：v22.23.2（满足 zcode-app-cli 要求的 `>= 22.19.0`；注意源码构建官方 CLI 才需要 Node >= 24，npm 包不需要）
+- 包：`zcode-app-cli@3.14.5-34`（2026-10-11 发布；`zcode --version` 显示 `zcode-app-cli 3.14.5-34` + `zcode-runtime 0.16.9`）
+- 运行时来源：官方桌面版 `ZCode-3.14.5-linux-x64.deb` 提取（见包内 `vendor/extraction.json`）
+
+Ubuntu 上有两条路：**(A) npm 安装 zcode-app-cli（推荐）**——界面/版本号与桌面客户端一致；**(B) 官方 OpenTUI CLI**——直接用 [`release/ubuntu-x86_64/`](release/ubuntu-x86_64/) 的预编译产物（需 Node >= 24.14），或照 macOS 章节从源码构建。
+
+### A. npm 安装 zcode-app-cli（推荐）
+
+```bash
+# 0. 绕过失效代理（如需要）
+alias noproxy='env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY'
+
+# 1. 全局安装（npm registry 可直连；解压后约 88MB，含内置 runtime）
+noproxy npm install -g zcode-app-cli@latest
+
+# 2. 确认 PATH 命中的是 npm 版（npm 全局 bin，如 ~/.npm-global/bin）
+which -a zcode        # 第一个应是 <npm prefix>/bin/zcode
+zcode --version       # zcode-app-cli 3.14.5-34
+
+# 3. 登录并进入 TUI
+zcode login bigmodel-coding-plan   # BigModel 编码计划；Z.AI 账号用 zcode login
+zcode
+```
+
+也可以直接运行本仓库的一键脚本：
+
+```bash
+bash scripts/install-ubuntu.sh
+```
+
+### B. 官方 OpenTUI CLI（预编译或源码构建）
+
+```bash
+# 预编译产物（需 Node >= 24.14.0）
+git clone https://github.com/yupoet/zcode-tui.git
+cd zcode-tui/release/ubuntu-x86_64
+./bin/zcode --version
+./bin/zcode login
+```
+
+源码构建步骤与 macOS 章节完全相同（tarball 解压 → `pnpm install` → `pnpm --filter @zcode/cli... build` → wrapper），在本机 Ubuntu 上已验证通过。
+
+### Ubuntu 已知事项
+
+- **凭证不通用**：源码构建的官方 CLI 写入的登录凭证（`~/.zcode/v2/credentials.json`）可能不被 zcode-app-cli 的桌面版提取 runtime 识别，表现为 `Model creation failed` 或 `Provider Registry 中不存在 Model: account:bigmodel-individual-coding-plan/GLM-5.3`。用 `zcode login bigmodel-coding-plan` 重新授权一次即可（Linux 上走服务端回调轮询，浏览器打开授权页确认即可）。反向亦然；两个客户端换着用时建议先备份该文件。
+- **PATH 遮蔽**：如果之前按源码构建方案装过 `~/.local/bin/zcode` wrapper，它会优先于 npm 全局 bin 命中（`~/.local/bin` 通常排在 PATH 前面）。一键脚本会自动把它改名为 `~/.local/bin/zcode-oss` 保留备用。
+- **配置共享**：provider 配置与桌面版共用 `~/.zcode/v2/provider_config.json`（默认模型选择等）；CLI 自身设置在 `~/.zcode/cli/setting.json`。
+- **升级**：`npm install -g zcode-app-cli@latest`。`@latest` 始终指向最新验证过的「桌面版+构建号」组合（版本号形如 `3.14.5-34`，带 prerelease 段）。
+- 想用官方 OpenTUI 界面而非桌面版界面的，仍可按 macOS 章节的源码构建方案在 Ubuntu 上构建（步骤相同，`~/ZCode` + wrapper），入口建议命名为 `zcode-oss` 避免冲突。
 
 ---
 
@@ -147,10 +200,12 @@ pnpm --filter @zcode/cli... build
 
 ```
 scripts/
-  install-macos-intel.sh   # macOS Intel 一键安装脚本
+  install-macos-intel.sh   # macOS Intel 一键安装脚本（源码构建官方 CLI）
+  install-ubuntu.sh        # Ubuntu 一键安装脚本（npm 安装 zcode-app-cli）
   zcode-wrapper.sh         # ~/.local/bin/zcode 入口模板
 release/
   macos-x86_64/            # 预编译产物（macOS Intel）：bin/zcode.cjs + 入口脚本 bin/zcode
+  ubuntu-x86_64/           # 预编译产物（Ubuntu x86_64）：bin/zcode.cjs + 入口脚本 bin/zcode
 vendor/
   README.md                # 快照来源、版本、许可证与使用说明
   ZCode/                   # 上游 zai-org/ZCode 源码快照（v3.15.1, aac47556, Apache-2.0）
