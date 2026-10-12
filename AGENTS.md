@@ -23,13 +23,19 @@ scripts/
   install-ubuntu.sh        # Ubuntu 一键安装：npm 全局安装 zcode-app-cli（内置官方桌面版提取 runtime）
   zcode-wrapper.sh         # ~/.local/bin/zcode 入口模板（exec node .../dist/zcode.cjs）
 release/
-  macos-x86_64/            # 预编译产物（macOS Intel）：bin/zcode.cjs + 入口脚本 bin/zcode
-  ubuntu-x86_64/           # 预编译产物（Ubuntu x86_64）：bin/zcode.cjs + 入口脚本 bin/zcode
+  macos-x86_64/            # 预编译产物（macOS Intel）
+  ubuntu-x86_64/           # 预编译产物（Ubuntu x86_64）
+                           # 每个目录：bin/zcode.cjs + 入口脚本 bin/zcode + README.md
+                           #   + 上游 LICENSE / NOTICE.md / THIRD-PARTY-NOTICES.md（Apache-2.0 合规随附）
 vendor/
   README.md                # 快照来源、版本、许可证、更新方法
   ZCode/                   # 上游 zai-org/ZCode 源码快照（详见下节）
+LICENSE                    # 本仓库自身脚本/文档的许可证（Apache-2.0，归 yupoet）
+README.md / README.en.md   # 中/英文 README，顶部互相链接，修改时必须同步两份
 .gitignore                 # 仅忽略 node_modules/、dist/、.DS_Store
 ```
+
+**Release 命名规则**（目录、tag、资产、标题四者对齐，规则详见 README）：目录 `release/<os>-x86_64/`；tag `v<上游版本>-<os>-x86_64`；资产 `zcode-tui-v<上游版本>-<os>-x86_64.tar.gz`（含顶层目录，确定性参数打包）；标题 `ZCode TUI 预编译版 v<上游版本> (<OS> x86_64)`。
 
 ## 构建与使用命令
 
@@ -79,7 +85,7 @@ node apps/zcode-cli/packages/cli/dist/zcode.cjs --version
 
 ### 本仓库（脚本与文档）
 
-- 文档与注释统一使用**中文**。
+- 文档与注释统一使用**中文**；例外：`README.en.md` 为英文镜像，`README.md`（中文主版本）与 `README.en.md` 必须同步修改。
 - shell 脚本使用 bash，开头 `set -euo pipefail`；路径与版本等可变项提取为可用环境变量覆盖的默认值（参考 `install-macos-intel.sh` 的 `ZCODE_REF`/`NODE_BIN` 等模式）。
 - 脚本需对网络失败做容错：多镜像重试（ghproxy.net / gh-proxy.com）、`curl --retry`、解压前校验 tarball 完整性；下载前 `unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY` 以绕过失效的本地代理。
 - 修改构建步骤或版本后，同步更新 `README.md`、`vendor/README.md`（版本号与提交哈希）和对应脚本，保持三处一致。
