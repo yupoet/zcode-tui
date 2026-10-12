@@ -10,17 +10,18 @@
 
 本仓库记录各平台从源码构建 ZCode TUI 的完整过程，并提供可重复执行的脚本。
 
-## 预编译产物（Release）
+## 预编译产物
 
-不想从源码构建的，可直接下载 [Releases](https://github.com/yupoet/zcode-tui/releases) 中的预编译包（含 `bin/zcode.cjs` 与入口脚本 `bin/zcode`）：
+不想从源码构建的，可以直接用仓库内 [`release/`](release/) 目录中的预编译文件（含 `bin/zcode.cjs` 与入口脚本 `bin/zcode`），或下载 [Releases](https://github.com/yupoet/zcode-tui/releases) 页面中的压缩包（附 SHA-256）：
 
 | 产物 | 平台 | 源码版本 | CLI 版本 |
 | --- | --- | --- | --- |
-| `zcode-tui-v3.15.1-macos-x86_64.tar.gz` | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+| [`release/macos-x86_64/`](release/macos-x86_64/) | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+| `zcode-tui-v3.15.1-macos-x86_64.tar.gz`（Release 资产） | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
 
 ```bash
-tar -xzf zcode-tui-v3.15.1-macos-x86_64.tar.gz
-cd zcode-tui-v3.15.1-macos-x86_64
+git clone https://github.com/yupoet/zcode-tui.git
+cd zcode-tui/release/macos-x86_64
 ./bin/zcode --version   # 需 Node.js >= 24.14.0
 ./bin/zcode login       # 首次登录
 ./bin/zcode             # 进入 TUI
@@ -148,6 +149,8 @@ pnpm --filter @zcode/cli... build
 scripts/
   install-macos-intel.sh   # macOS Intel 一键安装脚本
   zcode-wrapper.sh         # ~/.local/bin/zcode 入口模板
+release/
+  macos-x86_64/            # 预编译产物（macOS Intel）：bin/zcode.cjs + 入口脚本 bin/zcode
 vendor/
   README.md                # 快照来源、版本、许可证与使用说明
   ZCode/                   # 上游 zai-org/ZCode 源码快照（v3.15.1, aac47556, Apache-2.0）

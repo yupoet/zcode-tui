@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# ZCode CLI/TUI 入口（预编译版，macOS x86_64，源码 v3.15.1 / CLI 0.16.9）
+# 要求 Node.js >= 24.14.0
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec node "$SCRIPT_DIR/zcode.cjs" "$@"
