@@ -1,7 +1,7 @@
 # zcode-tui
 
 <p align="center">
-  <strong>从源码构建并安装 ZCode（智谱 Z.AI Coding Agent）的终端 CLI/TUI —— 无需 Electron</strong>
+  <strong>ZCode 终端 / 命令行版（CLI · TUI）构建与安装指南 —— 无需 Electron 桌面客户端</strong>
 </p>
 
 <p align="center">
@@ -18,13 +18,53 @@
 
 ---
 
+## 常见问题（FAQ）
+
+### ZCode 有命令行 / 终端版本吗？
+
+有。ZCode 是开源的，官方仓库 [zai-org/ZCode](https://github.com/zai-org/ZCode) 中就包含 Agent CLI/TUI 的源码（`apps/zcode-cli/`），可以构建出纯终端入口；npm 上另有社区封装的 `zcode-app-cli`。
+
+但官方渠道（[官网](https://zcode-ai.com)、GitHub Releases）**只提供桌面版安装器**，上游 README 的构建说明也是面向开发者的开发文档——没有一条面向用户的「命令行版安装」路径。本仓库就是来补这个缺口的：把官方源码构建步骤整理成端到端的用户教程，提供一键脚本与已验证的预编译产物。
+
+### 三种使用 ZCode 的方式怎么选？
+
+| | 桌面客户端（官方） | 源码构建 CLI（本仓库） | `zcode-app-cli`（社区） |
+| --- | --- | --- | --- |
+| 获取方式 | [官网](https://zcode-ai.com)下载安装器 | 本仓库脚本 / [预编译产物](release/) | `npm install -g zcode-app-cli` |
+| 界面 | Electron 桌面 GUI | 官方 OpenTUI 终端界面 | 桌面版界面（官方 runtime + pi-tui 封装） |
+| 版本号 | v3.x（桌面版） | `0.16.9`（独立维护） | 桌面版版本号（如 `3.14.5-34`） |
+| Node.js 要求 | 不需要（自带 runtime） | >= 24.14 | >= 22.19 |
+| 需要本机桌面版？ | 是本体 | 否 | 否（runtime 内置） |
+| `--web` 浏览器模式 | 本体即 GUI | 不含（见[下文说明](#与上游官方文档的关系)） | — |
+| 登录凭证 | 在 GUI 内登录 | `zcode login`，与桌面版/社区版互不通用 | `zcode login`，与源码构建版互不通用 |
+
+### 为什么 npm 上搜不到官方 ZCode CLI 包？
+
+ZCode **没有官方独立 npm CLI 包**（`@zhipu/zcode` 在 npm 上不存在）。npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区第三方封装：从官方桌面版发布物（.deb 等）提取官方 runtime，套上自研的 pi-tui 终端界面，开箱即用但非官方出品。
+
+### 需要先安装桌面版吗？
+
+不需要。源码构建与本仓库的预编译产物都不依赖桌面版；`zcode-app-cli` 也内置了 runtime。`~/.zcode/` 数据目录（配置等）与桌面版共用，但登录凭证需各自授权。
+
 ## 背景
 
-- ZCode **没有官方独立 npm CLI 包**（`@zhipu/zcode` 在 npm 上不存在，404）。官方分发渠道是 [zcode-ai.com](https://zcode-ai.com) 的桌面客户端（Electron GUI）。
-- npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区非官方封装：它直接从官方桌面版发布物（.deb 等）提取**官方 runtime**、套上自研的 pi-tui 终端界面，npm 包内置 runtime，**不需要本机安装桌面版**。其界面与版本号（如 `3.14.5-34`）与桌面客户端一致，支持 Linux/macOS/Windows，Node.js >= 22.19 即可，是 Ubuntu 上最省事的方案。
+- ZCode 官方分发渠道是 [zcode-ai.com](https://zcode-ai.com) 的桌面客户端（Electron GUI），官网与 GitHub Releases 均只提供桌面版安装器。
+- npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区非官方封装：直接从官方桌面版发布物（.deb 等）提取**官方 runtime**、套上自研的 pi-tui 终端界面，npm 包内置 runtime，**不需要本机安装桌面版**。其界面与版本号（如 `3.14.5-34`）与桌面客户端一致，支持 Linux/macOS/Windows，Node.js >= 22.19 即可，是 Ubuntu 上最省事的方案。
 - 官方仓库 [zai-org/ZCode](https://github.com/zai-org/ZCode) 是开源的，包含桌面应用、Web、后端以及 Agent CLI/TUI 源码（`apps/zcode-cli/`），可以自己构建出纯终端入口，无需 Electron。源码构建出的是官方 OpenTUI 版 CLI（版本号 `0.16.9`），界面与桌面客户端不同。
 
 本仓库记录各平台从源码构建 ZCode TUI 的完整过程，提供可重复执行的脚本，并收录已验证的预编译产物。
+
+## 与上游官方文档的关系
+
+本仓库的构建方法**就是上游 README 里的官方命令**，不是自创流程：
+
+- 核心构建命令 `pnpm --filter @zcode/cli... build` 出自上游 README「开发与运行 → [CLI 源码开发](https://github.com/zai-org/ZCode#cli-源码开发)」章节；
+- Node.js（`mise.toml` 锁定 24.14.0）与 pnpm（`packageManager` 锁定 10.33.2）的版本要求同样来自上游仓库。
+
+本仓库的增量工作：面向用户而非开发者重排步骤（源码下载镜像加速、入口 wrapper、登录与 PATH 排查、双平台验证矩阵），并收录预编译产物。与上游文档有两点透明差异：
+
+1. **依赖初始化用 `pnpm install` 而非 `pnpm bootstrap`**：`bootstrap` 会额外准备桌面运行资源并执行 `build:bootstrap`，纯 CLI 构建用不到；本方案已在 macOS Intel 与 Ubuntu 实测可行。
+2. **产物取 `apps/zcode-cli/packages/cli/dist/zcode.cjs` 单文件入口**（即上游 CLI 开发章节使用的同一入口），而非 `pnpm build:zcode` 组装的完整「命令行发行包」。后者还包含 Web/后端、TUI 原生库与 worker，支持 `zcode --web` 浏览器模式，且需要自备 `ZCODE_DIST_BASE_URL` 托管地址——因此**本仓库构建的 CLI 不含 `--web` 模式**。如需该能力，见上游 README「[ZCode 命令行版](https://github.com/zai-org/ZCode#zcode-命令行版)」章节的完整打包流程。
 
 ## 快速开始（预编译产物）
 
@@ -250,3 +290,12 @@ vendor/
 - 官方仓库：https://github.com/zai-org/ZCode
 - 官网（桌面版下载 / GLM Coding Plan）：https://zcode-ai.com
 - 社区非官方 npm 封装：https://github.com/kingsword09/zcode-cli
+
+## 搜索关键词
+
+<details>
+<summary>点开查看本仓库覆盖的搜索词（便于检索到本指南）</summary>
+
+zcode cli、zcode tui、zcode 命令行、zcode 命令行版、zcode 终端、zcode 终端版、zcode cli 安装、zcode cli install、zcode cli npm、zcode npm 包、@zhipu/zcode、zcode-app-cli、智谱 zcode 终端、智谱清言 zcode、z.ai coding plan 终端、glm coding plan cli、zcode linux、zcode ubuntu、zcode macos intel、zcode headless、zcode --json、zcode 不用桌面版、zcode 去 electron、zcode 源码构建、zcode 从源码构建 cli、build zcode cli from source
+
+</details>

@@ -1,7 +1,7 @@
 # zcode-tui
 
 <p align="center">
-  <strong>Build &amp; install the terminal CLI/TUI of ZCode (Z.AI's Coding Agent) from source — no Electron required</strong>
+  <strong>Build &amp; install the ZCode terminal / command-line CLI &amp; TUI — no Electron desktop app needed</strong>
 </p>
 
 <p align="center">
@@ -18,13 +18,53 @@
 
 ---
 
+## FAQ
+
+### Does ZCode have a CLI or terminal version?
+
+Yes. ZCode is open source, and the official repo [zai-org/ZCode](https://github.com/zai-org/ZCode) contains the Agent CLI/TUI source (`apps/zcode-cli/`), from which you can build a pure terminal entry point. There is also a community npm wrapper, `zcode-app-cli`.
+
+However, the official channels ([website](https://zcode-ai.com), GitHub Releases) **only ship desktop installers**, and the build instructions in the upstream README are written for developers — there is no user-facing "install the CLI" path. That is the gap this repository fills: it turns the official source-build steps into an end-to-end user guide, with one-shot scripts and verified prebuilt artifacts.
+
+### How do the three ways of using ZCode compare?
+
+| | Desktop client (official) | Source-built CLI (this repo) | `zcode-app-cli` (community) |
+| --- | --- | --- | --- |
+| How to get | Installer from the [website](https://zcode-ai.com) | This repo's scripts / [prebuilt artifacts](release/) | `npm install -g zcode-app-cli` |
+| UI | Electron desktop GUI | Official OpenTUI terminal UI | Desktop UI (official runtime + pi-tui wrapper) |
+| Version | v3.x (desktop) | `0.16.9` (maintained separately) | Desktop version (e.g. `3.14.5-34`) |
+| Node.js requirement | None (runtime bundled) | >= 24.14 | >= 22.19 |
+| Desktop app needed? | Is the app itself | No | No (runtime bundled) |
+| `--web` browser mode | The app is a GUI | Not included (see [notes below](#relationship-with-the-upstream-official-docs)) | — |
+| Login credentials | Log in inside the GUI | `zcode login`; not shared with desktop/community versions | `zcode login`; not shared with the source-built CLI |
+
+### Why is there no official ZCode CLI package on npm?
+
+ZCode has **no official standalone npm CLI package** (`@zhipu/zcode` does not exist on npm). The [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) on npm is a community-made unofficial wrapper: it extracts the official runtime from the desktop release artifacts (e.g. the `.deb`) and adds a self-made pi-tui terminal front-end — convenient, but not official.
+
+### Do I need to install the desktop app first?
+
+No. Building from source (or using this repo's prebuilt artifacts) does not depend on the desktop app, and `zcode-app-cli` bundles its own runtime. The `~/.zcode/` data directory (config, etc.) is shared with the desktop app, but login credentials must be authorized separately.
+
 ## Background
 
-- ZCode has **no official standalone npm CLI package** (`@zhipu/zcode` returns 404 on npm). The official distribution channel is the desktop client (Electron GUI) from [zcode-ai.com](https://zcode-ai.com).
+- The official distribution channel of ZCode is the desktop client (Electron GUI) from [zcode-ai.com](https://zcode-ai.com); both the website and GitHub Releases only provide desktop installers.
 - [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) on npm is a community-made unofficial wrapper: it extracts the **official runtime** from the desktop release artifacts (e.g. the `.deb`), adds a self-made pi-tui terminal front-end, and bundles the runtime inside the npm package, so **no local desktop install is needed**. Its UI and version (e.g. `3.14.5-34`) match the desktop client; it works on Linux/macOS/Windows with Node.js >= 22.19, and is the easiest option on Ubuntu.
 - The official repo [zai-org/ZCode](https://github.com/zai-org/ZCode) is open source and contains the desktop app, web, backend, and the Agent CLI/TUI source (`apps/zcode-cli/`), so you can build a pure terminal entry point yourself. The source build produces the official OpenTUI CLI (version `0.16.9`), whose UI differs from the desktop client.
 
 This repo documents the full process of building the ZCode TUI from source on each platform, ships repeatable scripts, and publishes verified prebuilt artifacts.
+
+## Relationship with the upstream official docs
+
+The build method in this repo **is the official command from the upstream README**, not an invented process:
+
+- The core build command `pnpm --filter @zcode/cli... build` comes from the upstream README's "Development → CLI source development" section;
+- The version requirements for Node.js (24.14.0 pinned by `mise.toml`) and pnpm (10.33.2 pinned by `packageManager`) likewise come from the upstream repo.
+
+What this repo adds: re-arranging the steps for end users rather than developers (mirror-accelerated source download, entry wrapper, login and PATH troubleshooting, a verified two-platform matrix) plus prebuilt artifacts. Two transparent deviations from the upstream docs:
+
+1. **Dependency init uses `pnpm install` instead of `pnpm bootstrap`**: `bootstrap` additionally prepares desktop runtime resources and runs `build:bootstrap`, which a CLI-only build does not need; this has been verified on macOS Intel and Ubuntu.
+2. **The artifact is the single-file entry `apps/zcode-cli/packages/cli/dist/zcode.cjs`** (the same entry used by the upstream CLI development section), not the full "command-line distribution package" assembled by `pnpm build:zcode`. The latter also bundles web/backend, TUI native libraries and workers, supports the `zcode --web` browser mode, and requires a self-hosted `ZCODE_DIST_BASE_URL` — therefore **the CLI built by this repo does not include `--web` mode**. For that capability, see the upstream README's "ZCode command-line edition" packaging section.
 
 ## Quick Start (Prebuilt Artifacts)
 
@@ -251,3 +291,12 @@ vendor/
 - Official repository: https://github.com/zai-org/ZCode
 - Official site (desktop download / GLM Coding Plan): https://zcode-ai.com
 - Community unofficial npm wrapper: https://github.com/kingsword09/zcode-cli
+
+## Search Keywords
+
+<details>
+<summary>Click to expand the search phrases this guide covers</summary>
+
+zcode cli, zcode tui, zcode terminal, zcode command line, zcode command-line edition, zcode cli install, zcode cli npm, zcode npm package, @zhipu/zcode, zcode-app-cli, z.ai coding plan cli, glm coding plan terminal, zcode linux, zcode ubuntu, zcode macos intel, zcode headless, zcode --json, zcode without desktop app, zcode no electron, build zcode from source, build zcode cli from source
+
+</details>
