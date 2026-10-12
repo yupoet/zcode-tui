@@ -1,40 +1,56 @@
 # zcode-tui
 
-从源码构建并安装 [ZCode](https://github.com/zai-org/ZCode)（智谱 Z.AI）终端 TUI / CLI 的实践方案与脚本。
+<p align="center">
+  <strong>从源码构建并安装 ZCode（智谱 Z.AI Coding Agent）的终端 CLI/TUI —— 无需 Electron</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/zai-org/ZCode/tree/v3.15.1"><img src="https://img.shields.io/badge/upstream-zai--org%2FZCode%20v3.15.1-3178c6?logo=github" alt="upstream zai-org/ZCode v3.15.1"></a>
+  <a href="https://github.com/yupoet/zcode-tui/releases"><img src="https://img.shields.io/badge/CLI-0.16.9-339933" alt="CLI 0.16.9"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%E2%89%A5%2024.14-43853d?logo=nodedotjs" alt="Node >= 24.14"></a>
+  <a href="#平台支持状态"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Ubuntu%20(x86__64)-8b8b8b" alt="platform macOS | Ubuntu (x86_64)"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-0078b4" alt="License Apache-2.0"></a>
+</p>
+
+<p align="center">
+  简体中文 | <a href="README.en.md">English</a>
+</p>
+
+---
 
 ## 背景
 
 - ZCode **没有官方独立 npm CLI 包**（`@zhipu/zcode` 在 npm 上不存在，404）。官方分发渠道是 [zcode-ai.com](https://zcode-ai.com) 的桌面客户端（Electron GUI）。
-- npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区非官方封装：它直接从官方桌面版发布物（.deb 等）提取**官方 runtime**、套上自研的 pi-tui 终端界面，npm 包内置 runtime，**不需要本机安装桌面版**。其界面与版本号（如 `v3.14.5-34`）与桌面客户端一致，支持 Linux/macOS/Windows，Node.js >= 22.19 即可，是 Ubuntu 上最省事的方案。
+- npm 上的 [`zcode-app-cli`](https://github.com/kingsword09/zcode-cli) 是社区非官方封装：它直接从官方桌面版发布物（.deb 等）提取**官方 runtime**、套上自研的 pi-tui 终端界面，npm 包内置 runtime，**不需要本机安装桌面版**。其界面与版本号（如 `3.14.5-34`）与桌面客户端一致，支持 Linux/macOS/Windows，Node.js >= 22.19 即可，是 Ubuntu 上最省事的方案。
 - 官方仓库 [zai-org/ZCode](https://github.com/zai-org/ZCode) 是开源的，包含桌面应用、Web、后端以及 Agent CLI/TUI 源码（`apps/zcode-cli/`），可以自己构建出纯终端入口，无需 Electron。源码构建出的是官方 OpenTUI 版 CLI（版本号 `0.16.9`），界面与桌面客户端不同。
 
-本仓库记录各平台从源码构建 ZCode TUI 的完整过程，并提供可重复执行的脚本。
+本仓库记录各平台从源码构建 ZCode TUI 的完整过程，提供可重复执行的脚本，并收录已验证的预编译产物。
 
-## 预编译产物
+## 快速开始（预编译产物）
 
-不想从源码构建的，可以直接用仓库内 [`release/`](release/) 目录中的预编译文件（含 `bin/zcode.cjs` 与入口脚本 `bin/zcode`），或下载 [Releases](https://github.com/yupoet/zcode-tui/releases) 页面中的压缩包（附 SHA-256）：
+不想从源码构建的，可以直接用仓库内 [`release/`](release/) 目录中的预编译文件（含 `bin/zcode.cjs` 与入口脚本 `bin/zcode`），或下载 [Releases](https://github.com/yupoet/zcode-tui/releases) 页面中的压缩包（附 SHA-256，解压后均带顶层目录）：
 
 | 产物 | 平台 | 源码版本 | CLI 版本 |
 | --- | --- | --- | --- |
-| [`release/macos-x86_64/`](release/macos-x86_64/) | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
-| [`release/ubuntu-x86_64/`](release/ubuntu-x86_64/) | Ubuntu (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
-| `zcode-tui-v3.15.1-macos-x86_64.tar.gz`（Release 资产） | macOS Intel (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
-| `zcode-tui-v3.15.1-ubuntu-x86_64.tar.gz`（Release 资产） | Ubuntu (x86_64) | v3.15.1 (`aac47556`) | 0.16.9 |
+| [`release/macos-x86_64/`](release/macos-x86_64/) | macOS Intel（x86_64） | v3.15.1（`aac47556`） | 0.16.9 |
+| [`release/ubuntu-x86_64/`](release/ubuntu-x86_64/) | Ubuntu（x86_64） | v3.15.1（`aac47556`） | 0.16.9 |
+| `zcode-tui-v3.15.1-macos-x86_64.tar.gz`（Release 资产） | macOS Intel（x86_64） | v3.15.1（`aac47556`） | 0.16.9 |
+| `zcode-tui-v3.15.1-ubuntu-x86_64.tar.gz`（Release 资产） | Ubuntu（x86_64） | v3.15.1（`aac47556`） | 0.16.9 |
 
 ```bash
 git clone https://github.com/yupoet/zcode-tui.git
-cd zcode-tui/release/macos-x86_64
-./bin/zcode --version   # 需 Node.js >= 24.14.0
-./bin/zcode login       # 首次登录
-./bin/zcode             # 进入 TUI
+cd zcode-tui/release/macos-x86_64   # Ubuntu 用 release/ubuntu-x86_64
+./bin/zcode --version               # 需 Node.js >= 24.14.0
+./bin/zcode login                   # 首次登录
+./bin/zcode                         # 进入 TUI
 ```
 
 ## 平台支持状态
 
-| 平台 | 状态 | 文档 |
+| 平台 | 状态 | 方案 |
 | --- | --- | --- |
-| macOS Intel (x86_64) | ✅ 已验证 | 见下文 |
-| Ubuntu (x86_64) | ✅ 已验证 | 见下文 |
+| macOS Intel（x86_64） | ✅ 已验证 | 源码构建官方 OpenTUI CLI（见下文） |
+| Ubuntu（x86_64） | ✅ 已验证 | npm 安装 `zcode-app-cli`（推荐）或源码构建（见下文） |
 
 ---
 
@@ -139,7 +155,7 @@ pnpm --filter @zcode/cli... build
 
 ---
 
-## Ubuntu
+## Ubuntu（x86_64）
 
 已在以下环境验证：
 
@@ -204,13 +220,30 @@ scripts/
   install-ubuntu.sh        # Ubuntu 一键安装脚本（npm 安装 zcode-app-cli）
   zcode-wrapper.sh         # ~/.local/bin/zcode 入口模板
 release/
-  macos-x86_64/            # 预编译产物（macOS Intel）：bin/zcode.cjs + 入口脚本 bin/zcode
-  ubuntu-x86_64/           # 预编译产物（Ubuntu x86_64）：bin/zcode.cjs + 入口脚本 bin/zcode
+  macos-x86_64/            # 预编译产物（macOS Intel）
+  ubuntu-x86_64/           # 预编译产物（Ubuntu x86_64）
+                           # 均为 bin/zcode.cjs + bin/zcode + README.md
+                           # + 上游 LICENSE / NOTICE.md / THIRD-PARTY-NOTICES.md
 vendor/
   README.md                # 快照来源、版本、许可证与使用说明
   ZCode/                   # 上游 zai-org/ZCode 源码快照（v3.15.1, aac47556, Apache-2.0）
                            # 已剔除 node_modules/dist 等构建产物，可直接 pnpm install 构建
 ```
+
+**Release 命名规则**（目录、tag、资产、标题四者对齐）：
+
+| 项 | 规则 | 示例 |
+| --- | --- | --- |
+| 目录 | `release/<os>-x86_64/` | `release/macos-x86_64/` |
+| tag | `v<上游版本>-<os>-x86_64` | `v3.15.1-macos-x86_64` |
+| 资产 | `zcode-tui-v<上游版本>-<os>-x86_64.tar.gz` | `zcode-tui-v3.15.1-macos-x86_64.tar.gz` |
+| 标题 | `ZCode TUI 预编译版 v<上游版本> (<OS> x86_64)` | `ZCode TUI 预编译版 v3.15.1 (macOS x86_64)` |
+
+## 许可证
+
+- 本仓库自身的脚本与文档以 [Apache-2.0](LICENSE) 发布。
+- `vendor/ZCode/` 是上游 [zai-org/ZCode](https://github.com/zai-org/ZCode) 的源码快照（Apache-2.0，版权 Z.AI Co., Ltd），保留其自带的 `LICENSE`、`NOTICE.md`、`THIRD-PARTY-NOTICES.md`。
+- `release/` 中的预编译产物是上游源码的构建结果，各平台目录随附上游的三份许可/声明文件。
 
 ## 参考
 
